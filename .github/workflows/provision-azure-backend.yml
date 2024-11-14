@@ -23,9 +23,9 @@ jobs:
       - name: Create Storage Account
         run: |
           az storage account create \
-            --name "myterraformstate" \
+            --name myterraformstate \
             --resource-group "my-terraform-rg" \
-            --location "East US" \  
+            --location westus \  
             --sku Standard_LRS \
             --kind StorageV2
 
