@@ -31,4 +31,4 @@ jobs:
 
       - name: Create Storage Container
         run: |
-          az storage container create --name "tfstate" --account-name "myterraformstate"
+          az storage container create --name "tfstate" --account-name "markducommuntfstate"
