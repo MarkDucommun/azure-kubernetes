@@ -14,7 +14,7 @@ jobs:
     steps:
       # Step 1: Checkout the code
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       # Step 2: Login to Azure using OIDC
       - name: Azure Login via OIDC
@@ -26,9 +26,9 @@ jobs:
 
       # Step 3: Setup Terraform CLI
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
-        with:
-          terraform_version: '1.9.8'  # Specify the Terraform version you want to use
+        uses: hashicorp/setup-terraform@v3
+#        with:
+#          terraform_version: '1.9.8'  # Specify the Terraform version you want to use
 
       # Step 4: Initialize Terraform with remote backend
       - name: Terraform Init
