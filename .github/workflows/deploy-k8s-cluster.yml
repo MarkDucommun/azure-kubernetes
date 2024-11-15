@@ -87,7 +87,9 @@ jobs:
       - name: Replace Placeholder IP in Inventory
         run: |
           PUBLIC_IP=$(jq -r '.vm_public_ip.value' terraform/terraform_output.json)
-          sed -i "s/PLACEHOLDER_IP/${PUBLIC_IP}/g" ansible/inventory.ini          
+          echo "Public IP: $PUBLIC_IP"
+          sed -i "s/PLACEHOLDER_IP/${PUBLIC_IP}/g" ansible/inventory.ini      
+          cat ansible/inventory.ini
 
       - name: Run Ansible Playbook
         run: |
