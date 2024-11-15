@@ -86,8 +86,8 @@ resource "azurerm_linux_virtual_machine" "k8s_vm" {
 
   source_image_reference {
     publisher = "Canonical"
-    offer     = "UbuntuServer"
-    sku       = "19_10-daily-gen2"
+    offer     = "0001-com-ubuntu-server-focal"
+    sku       = "20_04-lts-gen2"
     version   = "latest"
   }
 
