@@ -1,0 +1,96 @@
+- name: Provision Single-Node Kubernetes Cluster
+  hosts: all
+  become: true
+  tasks:
+    - name: Install required packages
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg
+          - lsb-release
+        state: present
+        update_cache: yes
+
+    - name: Add Kubernetes GPG key
+      apt_key:
+        url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+        state: present
+
+    - name: Add Kubernetes APT repository
+      apt_repository:
+        repo: "deb https://apt.kubernetes.io/ kubernetes-xenial main"
+        state: present
+        filename: "kubernetes"
+
+    - name: Update APT cache
+      apt:
+        update_cache: yes
+
+    - name: Install kubeadm, kubelet, and kubectl
+      apt:
+        name:
+          - kubelet
+          - kubeadm
+          - kubectl
+        state: present
+
+    - name: Hold the Kubernetes packages at their installed versions
+      shell: |
+        apt-mark hold kubelet kubeadm kubectl
+      args:
+        warn: false
+
+    - name: Disable swap
+      shell: |
+        if swapon --show | grep -q swap; then
+          swapoff -a
+        fi
+      changed_when: false
+
+    - name: Ensure swap is disabled on reboot
+      replace:
+        path: /etc/fstab
+        regexp: '^(.*/swap.*)$'
+        replace: '# \1'
+
+    - name: Check if Kubernetes is already initialized
+      stat:
+        path: /etc/kubernetes/admin.conf
+      register: kubeadm_status
+
+    - name: Initialize Kubernetes cluster
+      command: kubeadm init --pod-network-cidr=192.168.0.0/16
+      when: kubeadm_status.stat.exists == false
+
+    - name: Configure kubectl for the azureuser
+      copy:
+        content: |
+          mkdir -p $HOME/.kube
+          sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+          sudo chown $(id -u):$(id -g) $HOME/.kube/config
+        dest: /tmp/configure_kubectl.sh
+        mode: '0755'
+      when: kubeadm_status.stat.exists == false
+
+    - name: Execute kubectl configuration script
+      command: /tmp/configure_kubectl.sh
+      when: kubeadm_status.stat.exists == false
+
+    - name: Install Calico for Pod Networking
+      shell: |
+        if ! kubectl get pods -n kube-system | grep -q calico; then
+          kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
+        fi
+      when: kubeadm_status.stat.exists == false
+
+    - name: Check if control-plane taint is present
+      shell: kubectl get nodes -o jsonpath='{.items[0].spec.taints}' | grep -q "node-role.kubernetes.io/control-plane"
+      register: taint_check
+      failed_when: false
+      changed_when: false
+
+    - name: Remove control-plane taint to allow workloads
+      command: kubectl taint nodes --all node-role.kubernetes.io/control-plane-
+      when: taint_check.rc == 0

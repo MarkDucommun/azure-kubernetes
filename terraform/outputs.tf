@@ -10,10 +10,7 @@ output "subnet_name" {
   value = azurerm_subnet.k8s_subnet.name
 }
 
-output "vm_ip_addresses" {
-  value = [azurerm_linux_virtual_machine.k8s_vm.public_ip_address]
-}
-
-output "pip_ip_address" {
-  value = [azurerm_public_ip.k8s_pip.ip_address]
+output "vm_public_ip" {
+  value = azurerm_public_ip.k8s_pip.ip_address
+  description = "Public IP address of the Kubernetes node"
 }
