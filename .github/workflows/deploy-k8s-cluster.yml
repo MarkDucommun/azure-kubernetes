@@ -1,0 +1,47 @@
+name: Deploy Kubernetes Cluster
+
+on:
+  workflow_dispatch:  # Allows manual triggering of the workflow
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the code
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Step 2: Login to Azure using OIDC
+      - name: Azure Login via OIDC
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          enable-AzPSSession: true
+
+      # Step 3: Setup Terraform CLI
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: '1.9.8'  # Specify the Terraform version you want to use
+
+      # Step 4: Initialize Terraform with remote backend
+      - name: Terraform Init
+        run: terraform init
+        working-directory: terraform
+
+      # Step 5: Run Terraform Plan
+      - name: Terraform Plan
+        run: terraform plan -out=tfplan
+        working-directory: terraform
+
+      # Step 6: Run Terraform Apply
+      - name: Terraform Apply
+        run: terraform apply -input=false tfplan
+        working-directory: terraform
