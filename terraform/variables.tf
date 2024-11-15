@@ -6,7 +6,7 @@ variable "resource_group_name" {
 variable "location" {
   description = "Azure region where resources will be created"
   type        = string
-  default     = "East US"
+  default     = "Central US"
 }
 
 variable "vnet_name" {
@@ -24,7 +24,7 @@ variable "subnet_name" {
 variable "vm_size" {
   description = "Size of the virtual machines"
   type        = string
-  default     = "Standard_B2s"
+  default     = "Standard_B1s"
 }
 
 variable "admin_username" {
@@ -33,22 +33,22 @@ variable "admin_username" {
   default     = "azureuser"
 }
 
-variable "admin_ssh_public_key" {
-  description = "Public SSH key for accessing the VMs"
-  type        = string
-}
-
-variable "tenant_id" {
-  description = "Azure Tenant ID"
-  type        = string
-}
-
-variable "client_id" {
-  description = "Azure Client ID"
-  type        = string
-}
-
-variable "subscription_id" {
-  description = "Azure Subscription ID"
-  type        = string
-}
+# variable "admin_ssh_public_key" {
+#   description = "Public SSH key for accessing the VMs"
+#   type        = string
+# }
+#
+# variable "tenant_id" {
+#   description = "Azure Tenant ID"
+#   type        = string
+# }
+#
+# variable "client_id" {
+#   description = "Azure Client ID"
+#   type        = string
+# }
+#
+# variable "subscription_id" {
+#   description = "Azure Subscription ID"
+#   type        = string
+# }

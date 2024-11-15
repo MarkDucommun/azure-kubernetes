@@ -13,3 +13,7 @@ output "subnet_name" {
 output "vm_ip_addresses" {
   value = [azurerm_linux_virtual_machine.k8s_vm.public_ip_address]
 }
+
+output "pip_ip_address" {
+  value = [azurerm_public_ip.k8s_pip.ip_address]
+}
