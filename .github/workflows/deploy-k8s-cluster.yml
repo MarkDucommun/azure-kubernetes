@@ -38,9 +38,18 @@ jobs:
         working-directory: terraform
 
       - name: Terraform Plan
-        run: terraform plan -out=tfplan -var "admin_ssh_public_key=${{ secrets.SSH_PUBLIC_KEY }}"
+        run: terraform plan -out=tfplan \
+          -var "admin_ssh_public_key=${{ secrets.SSH_PUBLIC_KEY }}"
+          -var "tenant_id=${{ secrets.AZURE_TENANT_ID }}" \
+          -var "client_id=${{ secrets.AZURE_CLIENT_ID }}" \
+          -var "subscription_id=${{ secrets.AZURE_SUBSCRIPTION_ID }}"
+
         working-directory: terraform
 
       - name: Terraform Apply
-        run: terraform apply -input=false tfplan -var "admin_ssh_public_key=${{ secrets.SSH_PUBLIC_KEY }}"
+        run: terraform apply -input=false tfplan \
+          -var "admin_ssh_public_key=${{ secrets.SSH_PUBLIC_KEY }}"
+          -var "tenant_id=${{ secrets.AZURE_TENANT_ID }}" \
+          -var "client_id=${{ secrets.AZURE_CLIENT_ID }}" \
+          -var "subscription_id=${{ secrets.AZURE_SUBSCRIPTION_ID }}"
         working-directory: terraform
