@@ -3,6 +3,10 @@ name: Manual Terraform Deployment
 on:
   workflow_dispatch:  # This triggers the workflow manually
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   terraform:
     runs-on: ubuntu-latest  # The GitHub Actions runner environment
@@ -11,6 +15,13 @@ jobs:
       # Step 1: Checkout the repository
       - name: Checkout code
         uses: actions/checkout@v3
+
+      - name: Authenticate to Azure using OIDC
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       # Step 2: Set up Terraform CLI
       - name: Setup Terraform

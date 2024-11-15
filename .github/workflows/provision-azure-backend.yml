@@ -27,7 +27,7 @@ jobs:
 
       - name: Create Storage Account
         run: |
-          az storage account create --name myterraformstate --resource-group "my-terraform-rg" --location westus --sku Standard_LRS --kind StorageV2
+          az storage account create --name markducommunterraformstate --resource-group "my-terraform-rg" --location westus --sku Standard_LRS --kind StorageV2
 
       - name: Create Storage Container
         run: |
