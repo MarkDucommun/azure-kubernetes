@@ -33,10 +33,10 @@ variable "admin_username" {
   default     = "azureuser"
 }
 
-# variable "admin_ssh_public_key" {
-#   description = "Public SSH key for accessing the VMs"
-#   type        = string
-# }
+variable "admin_ssh_public_key" {
+  description = "Public SSH key for accessing the VMs"
+  type        = string
+}
 #
 # variable "tenant_id" {
 #   description = "Azure Tenant ID"

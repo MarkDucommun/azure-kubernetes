@@ -42,7 +42,7 @@ jobs:
         run: |
           terraform plan -out=tfplan \
           -var "admin_ssh_public_key=${{ secrets.SSH_PUBLIC_KEY }}" \
-          -var "test-k8s"
+          -var "resource_group_name=test-k8s"
         working-directory: terraform
 
       - name: Terraform Apply

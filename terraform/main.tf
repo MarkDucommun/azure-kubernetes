@@ -93,6 +93,7 @@ resource "azurerm_linux_virtual_machine" "k8s_vm" {
 
   admin_ssh_key {
     username   = var.admin_username
-    public_key = file("/Users/mducommun/Library/CloudStorage/OneDrive-VMware,Inc/workspace/azure-kubernetes/.secrets/github_action_key.pub")
+    public_key = var.admin_ssh_public_key
+    # public_key = file("/Users/mducommun/Library/CloudStorage/OneDrive-VMware,Inc/workspace/azure-kubernetes/.secrets/github_action_key.pub")
   }
 }
