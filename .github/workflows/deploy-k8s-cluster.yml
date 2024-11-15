@@ -93,4 +93,4 @@ jobs:
 
       - name: Run Ansible Playbook
         run: |
-          ansible-playbook -i ansible/inventory.ini ansible/provision_k8s.yml      
+          ansible-playbook -i ansible/inventory.ini --private-key ~/.ssh/github_action_key ansible/provision_k8s.yml      
