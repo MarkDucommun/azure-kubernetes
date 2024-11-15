@@ -64,6 +64,6 @@ resource "azurerm_linux_virtual_machine" "k8s_vm" {
 
   admin_ssh_key {
     username   = var.admin_username
-    public_key = file("~/.ssh/id_rsa.pub")  # Adjust this path as needed
+    public_key = var.admin_ssh_public_key
   }
 }

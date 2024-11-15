@@ -13,8 +13,10 @@
     "audiences": ["api://AzureADTokenExchange"]
     }'
    ```
-7. Set the following secrets in your GitHub repository:
+7. Create an SSH key pair `ssh-keygen -t rsa -b 4096 -C "github-actions@yourdomain.com" -f github_action_key -N ""`
+8. Set the following secrets in your GitHub repository:
    - `AZURE_CLIENT_ID` - From the output of the previous command
    - `AZURE_TENANT_ID` - From the output of the previous command
    - `AZURE_SUBSCRIPTION_ID` - Your subscription ID
-8.
+   - `SSH_PRIVATE_KEY` - The private key from the SSH key pair
+   - `SSH_PUBLIC_KEY` - The public key from the SSH key pair

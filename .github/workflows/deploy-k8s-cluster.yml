@@ -12,11 +12,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout the code
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
-      # Step 2: Login to Azure using OIDC
+      - name: Add Private SSH Key
+        run: |
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/github_action_key
+          chmod 600 ~/.ssh/github_action_key
+
       - name: Azure Login via OIDC
         uses: azure/login@v2
         with:
@@ -24,23 +27,19 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      # Step 3: Setup Terraform CLI
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 #        with:
 #          terraform_version: '1.9.8'  # Specify the Terraform version you want to use
 
-      # Step 4: Initialize Terraform with remote backend
       - name: Terraform Init
         run: terraform init
         working-directory: terraform
 
-      # Step 5: Run Terraform Plan
       - name: Terraform Plan
-        run: terraform plan -out=tfplan
+        run: terraform plan -out=tfplan -var "admin_ssh_public_key=${{ secrets.SSH_PUBLIC_KEY }}"
         working-directory: terraform
 
-      # Step 6: Run Terraform Apply
       - name: Terraform Apply
-        run: terraform apply -input=false tfplan
+        run: terraform apply -input=false tfplan -var "admin_ssh_public_key=${{ secrets.SSH_PUBLIC_KEY }}"
         working-directory: terraform
