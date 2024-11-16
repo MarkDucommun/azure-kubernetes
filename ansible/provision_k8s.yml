@@ -114,17 +114,11 @@
       when: kubeadm_status.stat.exists == false
 
     - name: Configure kubectl for the azureuser
-      copy:
-        content: |
-          mkdir -p $HOME/.kube
-          sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
-          sudo chown $(id -u):$(id -g) $HOME/.kube/config
-        dest: /tmp/configure_kubectl.sh
-        mode: '0755'
-      when: kubeadm_status.stat.exists == false
-
-    - name: Execute kubectl configuration script
-      command: /tmp/configure_kubectl.sh
+      shell: |
+        mkdir -p $HOME/.kube
+        cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+        chown $(id -u):$(id -g) $HOME/.kube/config
+      become: true
       when: kubeadm_status.stat.exists == false
 
     - name: Install Calico for Pod Networking
