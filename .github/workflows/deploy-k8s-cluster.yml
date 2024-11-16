@@ -93,4 +93,7 @@ jobs:
 
       - name: Run Ansible Playbook
         run: |
-          ansible-playbook -i ansible/inventory.ini --private-key ~/.ssh/github_action_key ansible/provision_k8s.yml      
+          ansible-playbook -i ansible/inventory.ini --private-key ~/.ssh/github_action_key ansible/provision_k8s.yml
+        env:
+          ANSIBLE_SSH_ARGS: "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ~/.ssh/github_action_key"
+          ANSIBLE_PRIVATE_KEY_FILE: ~/.ssh/github_action_key
