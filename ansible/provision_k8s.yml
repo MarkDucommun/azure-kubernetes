@@ -13,16 +13,42 @@
         state: present
         update_cache: yes
 
-    - name: Add Kubernetes GPG key
-      apt_key:
-        url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
-        state: present
+    - name: Create /etc/apt/keyrings directory
+      file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: '0755'
 
+    - name: Add Kubernetes GPG key
+      become: true
+      shell: curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.28/deb/Release.key | gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+      args:
+        creates: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+
+    - name: Change permissions of the GPG key
+      become: true
+      file:
+        path: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+        owner: root
+        group: root
+        mode: '0644'
+
+    #      apt_key:
+#        url: https://pkgs.k8s.io/core:/stable:/v1.28/deb/Release.key
+#        state: present
+#        keyring: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+
+#    - name: Add Kubernetes APT repository
+#      apt_repository:
+#        repo: "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/deb/ /"
+#        state: present
+#        filename: "kubernetes"
     - name: Add Kubernetes APT repository
-      apt_repository:
-        repo: "deb https://apt.kubernetes.io/ kubernetes-xenial main"
-        state: present
-        filename: "kubernetes"
+      become: true
+      copy:
+        content: |
+          deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg]  https://pkgs.k8s.io/core:/stable:/v1.28/deb/ /
+        dest: /etc/apt/sources.list.d/kubernetes.list
 
     - name: Update APT cache
       apt:
@@ -37,10 +63,8 @@
         state: present
 
     - name: Hold the Kubernetes packages at their installed versions
-      shell: |
-        apt-mark hold kubelet kubeadm kubectl
-      args:
-        warn: false
+      become: true
+      command: apt-mark hold kubelet kubeadm kubectl
 
     - name: Disable swap
       shell: |
