@@ -43,6 +43,20 @@ resource "azurerm_network_security_rule" "allow_ssh" {
   network_security_group_name = azurerm_network_security_group.k8s_nsg.name
 }
 
+resource "azurerm_network_security_rule" "allow_k8s_api" {
+  name                        = "allow-k8s-api"
+  priority                    = 1001  # Ensure the priority does not conflict with existing rules
+  direction                   = "Inbound"
+  access                      = "Allow"
+  protocol                    = "Tcp"
+  source_port_range           = "*"
+  destination_port_range      = "6443"
+  source_address_prefix       = "*"
+  destination_address_prefix  = "*"
+  resource_group_name         = azurerm_resource_group.k8s_rg.name
+  network_security_group_name = azurerm_network_security_group.k8s_nsg.name
+}
+
 resource "azurerm_network_interface_security_group_association" "k8s_nic_nsg_association" {
   network_interface_id      = azurerm_network_interface.k8s_nic.id
   network_security_group_id = azurerm_network_security_group.k8s_nsg.id
