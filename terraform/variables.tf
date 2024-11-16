@@ -24,7 +24,7 @@ variable "subnet_name" {
 variable "vm_size" {
   description = "Size of the virtual machines"
   type        = string
-  default     = "Standard_B1s"
+  default     = "Standard_B2s"
 }
 
 variable "admin_username" {
