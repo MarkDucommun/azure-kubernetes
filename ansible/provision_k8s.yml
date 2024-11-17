@@ -14,6 +14,12 @@
         state: present
         update_cache: yes
 
+    - name: Ensure kubernetes Python library is installed
+      pip:
+        name: kubernetes
+        executable: /usr/bin/python3.8
+      become: yes
+
     - name: Create /etc/apt/keyrings directory
       file:
         path: /etc/apt/keyrings
@@ -93,15 +99,14 @@
         - net.ipv4.ip_forward
       become: true
 
-    - name: Check if Kubernetes is responsive
-      command: kubectl get nodes
-      register: kubectl_status
-      failed_when: false
-      changed_when: false
+    - name: Check if Kubernetes cluster is already initialized
+      stat:
+        path: /etc/kubernetes/admin.conf
+      register: kubeadm_status
 
     - name: Initialize Kubernetes cluster
-      command: sudo kubeadm init --pod-network-cidr=192.168.0.0/16
-      when: kubectl_status.rc != 0
+      command: kubeadm init --pod-network-cidr=192.168.0.0/16
+      when: kubeadm_status.stat.exists == false
       become: true
 
     - name: Create .kube directory if it doesn't exist
