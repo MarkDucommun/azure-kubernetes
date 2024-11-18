@@ -91,12 +91,12 @@
         content: "{{ containerd_default_config.stdout }}"
         dest: /etc/containerd/config.toml
 
-    - name: Update SystemdCgroup to true in containerd config
+    - name: Update SystemdCgroup to true in containerd config, for single node clusters
       lineinfile:
+        backrefs: true
         path: /etc/containerd/config.toml
-        regexp: '^SystemdCgroup = false'
-        line: 'SystemdCgroup = true'
-        backup: yes
+        regexp: '^(\s*)SystemdCgroup = false'
+        line: '\1SystemdCgroup = true'
 
     - name: Enable and start containerd
       systemd:
@@ -131,112 +131,112 @@
         path: /etc/kubernetes/admin.conf
       register: kubeadm_status
 
-#    - name: Initialize Kubernetes cluster
-#      command: kubeadm init --pod-network-cidr=192.168.0.0/16
-#      when: kubeadm_status.stat.exists == false
-#      become: true
-#
-#    - name: Create .kube directory if it doesn't exist
-#      file:
-#        path: "/home/{{ ansible_user }}/.kube"
-#        state: directory
-#        mode: '0755'
-#      become: yes
-#      become_user: "{{ ansible_user }}"
-#
-#    - name: Copy /etc/kubernetes/admin.conf to $HOME/.kube/config
-#      copy:
-#        src: /etc/kubernetes/admin.conf
-#        dest: "/home/{{ ansible_user }}/.kube/config"
-#        owner: "{{ ansible_user }}"
-#        group: "{{ ansible_user }}"
-#        mode: '0644'
-#        remote_src: yes
-#      become: yes
-#
-#    - name: Check if control-plane taint is present
-#      shell: |
-#        kubectl get nodes -o jsonpath='{.items[0].spec.taints}' | grep -q "node-role.kubernetes.io/control-plane"
-#      register: taint_check
-#      become_user: "{{ ansible_user }}"
-#      changed_when: false
-#      failed_when: taint_check.rc not in [0, 1]
-#
-#    - name: Remove control-plane taint to allow workloads
-#      command: kubectl taint nodes --all node-role.kubernetes.io/control-plane-
-#      when: taint_check.rc == 0
-#      become_user: "{{ ansible_user }}"
-#
-#    - name: Check if Calico is already deployed
-#      command: kubectl get pods -n kube-system
-#      register: calico_check
-#      changed_when: false
-#      failed_when: false
-#      become_user: "{{ ansible_user }}"
-#
-#    - name: Install Calico for Pod Networking if not already present
-#      command: kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
-#      when: "'calico' not in calico_check.stdout"
-#      become: true
-#      become_user: "{{ ansible_user }}"
-#      delegate_to: k8s-node
-#
+    - name: Initialize Kubernetes cluster
+      command: kubeadm init --pod-network-cidr=192.168.0.0/16
+      when: kubeadm_status.stat.exists == false
+      become: true
+
+    - name: Create .kube directory if it doesn't exist
+      file:
+        path: "/home/{{ ansible_user }}/.kube"
+        state: directory
+        mode: '0755'
+      become: yes
+      become_user: "{{ ansible_user }}"
+
+    - name: Copy /etc/kubernetes/admin.conf to $HOME/.kube/config
+      copy:
+        src: /etc/kubernetes/admin.conf
+        dest: "/home/{{ ansible_user }}/.kube/config"
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: '0644'
+        remote_src: yes
+      become: yes
+
+    - name: Check if control-plane taint is present
+      shell: |
+        kubectl get nodes -o jsonpath='{.items[0].spec.taints}' | grep -q "node-role.kubernetes.io/control-plane"
+      register: taint_check
+      become_user: "{{ ansible_user }}"
+      changed_when: false
+      failed_when: taint_check.rc not in [0, 1]
+
+    - name: Remove control-plane taint to allow workloads
+      command: kubectl taint nodes --all node-role.kubernetes.io/control-plane-
+      when: taint_check.rc == 0
+      become_user: "{{ ansible_user }}"
+
+    - name: Check if Calico is already deployed
+      command: kubectl get pods -n kube-system
+      register: calico_check
+      changed_when: false
+      failed_when: false
+      become_user: "{{ ansible_user }}"
+
+    - name: Install Calico for Pod Networking if not already present
+      command: kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
+      when: "'calico' not in calico_check.stdout"
+      become: true
+      become_user: "{{ ansible_user }}"
+
+# TODO look into this more
 #- name: Deploy ArgoCD Application Manifest
 #  hosts: localhost
 #  become: true
 #  tasks:
-#    - name: Check if ArgoCD namespace exists
-#      stat:
-#        path: /tmp/argocd_namespace_created
-#      register: argocd_namespace_check
-#
-#    - name: Create ArgoCD namespace
-#      command: kubectl create namespace argocd
-#      args:
-#        creates: /tmp/argocd_namespace_created
-#      become: true
-#      become_user: "{{ ansible_user }}"
-#      when: argocd_namespace_check.stat.exists == false
-#
-#    - name: Check if ArgoCD is already deployed
-#      command: kubectl get pods -n argocd
-#      register: argocd_check
-#      changed_when: false
-#      failed_when: false
-#      become_user: "{{ ansible_user }}"
-#
-#    - name: Install ArgoCD if not already present
-#      command: kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
-#      when: "'argocd' not in argocd_check.stdout"
-#      become: true
-#      become_user: "{{ ansible_user }}"
-#
-#    - name: Ensure argo directory exists
-#      file:
-#        path: "./argo"
-#        state: directory
-#        mode: '0755'
-#
-#    - name: Create ArgoCD Application manifest
-#      copy:
-#        dest: "./argo/manifest.yml"
-#        content: |
-#          apiVersion: argoproj.io/v1alpha1
-#          kind: Application
-#          metadata:
-#            name: k8s-basics
-#            namespace: argocd
-#          spec:
-#            project: default
-#            source:
-#              repoURL: https://github.com/MarkDucommun/azure-kubernetes
-#              targetRevision: HEAD
-#              path: argo
-#            destination:
-#              server: https://kubernetes.default.svc
-#              namespace: guestbook
-#
-#    - name: Apply ArgoCD Application manifest
-#      command: kubectl apply -f ./argo/manifest.yml
-#      become: true
-#      become_user: "{{ ansible_user }}"
+    - name: Check if ArgoCD namespace exists
+      stat:
+        path: /tmp/argocd_namespace_created
+      register: argocd_namespace_check
+
+    - name: Create ArgoCD namespace
+      command: kubectl create namespace argocd
+      args:
+        creates: /tmp/argocd_namespace_created
+      become: true
+      become_user: "{{ ansible_user }}"
+      when: argocd_namespace_check.stat.exists == false
+
+    - name: Check if ArgoCD is already deployed
+      command: kubectl get pods -n argocd
+      register: argocd_check
+      changed_when: false
+      failed_when: false
+      become_user: "{{ ansible_user }}"
+
+    - name: Install ArgoCD if not already present
+      command: kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+      when: "'argocd' not in argocd_check.stdout"
+      become: true
+      become_user: "{{ ansible_user }}"
+
+    - name: Ensure argo directory exists
+      file:
+        path: "/tmp/argo"
+        state: directory
+        mode: '0755'
+
+    - name: Create ArgoCD Application manifest
+      copy:
+        dest: "/tmp/argo/manifest.yml"
+        content: |
+          apiVersion: argoproj.io/v1alpha1
+          kind: Application
+          metadata:
+            name: k8s-basics
+            namespace: argocd
+          spec:
+            project: default
+            source:
+              repoURL: https://github.com/MarkDucommun/azure-kubernetes
+              targetRevision: HEAD
+              path: argo
+            destination:
+              server: https://kubernetes.default.svc
+              namespace: test
+
+    - name: Apply ArgoCD Application manifest
+      command: kubectl apply -n argocd -f /tmp/argo/manifest.yml
+      become: true
+      become_user: "{{ ansible_user }}"
