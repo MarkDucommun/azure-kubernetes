@@ -27,7 +27,7 @@
     # Make declarative
     - name: Add Kubernetes GPG key
       become: true
-      shell: curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.28/deb/Release.key | gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+      shell: curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.31/deb/Release.key | gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
       args:
         creates: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
       when: gpg_key_status.stat.exists == false
@@ -44,7 +44,7 @@
       become: true
       copy:
         content: |
-          deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg]  https://pkgs.k8s.io/core:/stable:/v1.28/deb/ /
+          deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg]  https://pkgs.k8s.io/core:/stable:/v1.31/deb/ /
         dest: /etc/apt/sources.list.d/kubernetes.list
 
     - name: Update APT cache
@@ -171,17 +171,21 @@
       args:
         creates: /tmp/argocd_namespace_created
       become: true
+      become_user: "{{ ansible_user }}"
+      when: argocd_namespace_check.stat.exists == false
 
     - name: Check if ArgoCD is already deployed
       command: kubectl get pods -n argocd
       register: argocd_check
       changed_when: false
       failed_when: false
+      become_user: "{{ ansible_user }}"
 
     - name: Install ArgoCD if not already present
       command: kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
       when: "'argocd' not in argocd_check.stdout"
       become: true
+      become_user: "{{ ansible_user }}"
 
     - name: Ensure argo directory exists
       file:
@@ -211,3 +215,4 @@
     - name: Apply ArgoCD Application manifest
       command: kubectl apply -f ./argo/manifest.yml
       become: true
+      become_user: "{{ ansible_user }}"
