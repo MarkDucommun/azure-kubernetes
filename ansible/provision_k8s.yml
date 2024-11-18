@@ -5,7 +5,6 @@
     - name: Install required packages
       apt:
         name:
-          - apt-transport-https
           - ca-certificates
           - curl
           - gnupg
@@ -85,6 +84,10 @@
       become: true
 
     - name: Ensure br_netfilter module is loaded
+      command: modprobe overlay
+      become: true
+
+    - name: Ensure br_netfilter module is loaded
       command: modprobe br_netfilter
       become: true
 
@@ -128,16 +131,8 @@
         remote_src: yes
       become: yes
 
-    - name: explore
-      shell: |
-        cat ~/.kube/config
-#      become: true
-      become_user: "{{ ansible_user }}"
-
     - name: Check if control-plane taint is present
       shell: |
-        whoami
-        cat /home/azureuser/.kube/config
         kubectl get nodes -o jsonpath='{.items[0].spec.taints}' | grep -q "node-role.kubernetes.io/control-plane"
       register: taint_check
       become_user: "{{ ansible_user }}"
