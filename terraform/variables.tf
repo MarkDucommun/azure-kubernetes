@@ -37,18 +37,3 @@ variable "admin_ssh_public_key" {
   description = "Public SSH key for accessing the VMs"
   type        = string
 }
-#
-# variable "tenant_id" {
-#   description = "Azure Tenant ID"
-#   type        = string
-# }
-#
-# variable "client_id" {
-#   description = "Azure Client ID"
-#   type        = string
-# }
-#
-# variable "subscription_id" {
-#   description = "Azure Subscription ID"
-#   type        = string
-# }

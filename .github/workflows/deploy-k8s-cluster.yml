@@ -40,7 +40,7 @@ jobs:
 
       - name: Terraform Plan
         run: |
-          terraform plan -out=tfplan \
+          terraform plan -out=tfplan -input=false \
           -var "admin_ssh_public_key=${{ secrets.SSH_PUBLIC_KEY }}" \
           -var "resource_group_name=test-k8s"
         working-directory: terraform
