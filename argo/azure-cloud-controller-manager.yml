@@ -24,7 +24,7 @@ spec:
         - name: cloud-controller-manager
           image: mcr.microsoft.com/oss/kubernetes/azure-cloud-controller-manager:v1.31.1
           command:
-            - /cloud-controller-manager
+            - azure-cloud-controller-manager
             - --cloud-provider=azure
             - --cloud-config=/etc/kubernetes/azure.json
             - --leader-elect=true
