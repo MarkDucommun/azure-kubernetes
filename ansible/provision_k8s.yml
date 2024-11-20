@@ -260,15 +260,17 @@
       become: yes
 
     - name: Check if Azure Secret exists
-      command: kubectl get secret azure-config-secret -n kube-system | grep -q azure-config-secret
+      shell: kubectl get secret azure-config-secret -n kube-system | grep -q azure-config-secret
       register: kube_azure_secret_check
+      become: true
+      become_user: "{{ ansible_user }}"
       failed_when: kube_azure_secret_check.rc not in [0, 1]
 
     - name: Apply Azure Secret
       command: kubectl create secret generic azure-config-secret --from-file=/tmp/kube/azure.json -n kube-system
       become: true
       become_user: "{{ ansible_user }}"
-      when: kube_azure_secret_check.rc != 0
+      when: kube_azure_secret_check.rc == 1
 
     - name: Check if control-plane taint is present
       shell: |
@@ -297,17 +299,16 @@
       become_user: "{{ ansible_user }}"
 
     - name: Check if ArgoCD namespace exists
-      stat:
-        path: /tmp/argocd_namespace_created
+      command: kubectl get namespace
       register: argocd_namespace_check
+      become: true
+      become_user: "{{ ansible_user }}"
 
     - name: Create ArgoCD namespace
       command: kubectl create namespace argocd
-      args:
-        creates: /tmp/argocd_namespace_created
       become: true
       become_user: "{{ ansible_user }}"
-      when: argocd_namespace_check.stat.exists == false
+      when: "'argocd' not in argocd_namespace_check.stdout"
 
     - name: Check if ArgoCD is already deployed
       command: kubectl get pods -n argocd
