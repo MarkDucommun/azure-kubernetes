@@ -42,3 +42,8 @@ variable "azure_subscription_id" {
   description = "Azure subscription ID"
   type        = string
 }
+
+variable "oidc_client_id" {
+  description = "Client ID of the Azure AD OIDC application"
+  type = string
+}

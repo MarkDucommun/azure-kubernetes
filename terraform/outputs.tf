@@ -16,6 +16,6 @@ output "vm_public_ip" {
 }
 
 output "oidc_client_id" {
-  value       = azuread_application.k8s_oidc_app.client_id
+  value       = var.oidc_client_id
   description = "Client ID of the Azure AD OIDC application"
 }

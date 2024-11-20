@@ -87,23 +87,23 @@ resource "azuread_application" "k8s_oidc_app" {
   display_name = "k8s-oidc-app"
 }
 
-resource "azuread_service_principal" "k8s_oidc_sp" {
-  client_id = azuread_application.k8s_oidc_app.client_id
-}
-
-resource "azurerm_role_assignment" "k8s_oidc_role_assignment" {
-  principal_id         = azuread_service_principal.k8s_oidc_sp.object_id
-  role_definition_name = "Contributor"
-  scope                = "/subscriptions/${var.azure_subscription_id}"
-}
-
-resource "azuread_application_federated_identity_credential" "k8s_oidc_fic" {
-  application_id = azuread_application.k8s_oidc_app.id
-  display_name   = "k8s-oidc-credential"
-  issuer         = "https://${azurerm_public_ip.k8s_pip.ip_address}/"
-  subject        = "system:serviceaccount:default:oidc-auth-sa"
-  audiences = [azuread_application.k8s_oidc_app.client_id]
-}
+# resource "azuread_service_principal" "k8s_oidc_sp" {
+#   client_id = azuread_application.k8s_oidc_app.client_id
+# }
+#
+# resource "azurerm_role_assignment" "k8s_oidc_role_assignment" {
+#   principal_id         = azuread_service_principal.k8s_oidc_sp.object_id
+#   role_definition_name = "Contributor"
+#   scope                = "/subscriptions/${var.azure_subscription_id}"
+# }
+#
+# resource "azuread_application_federated_identity_credential" "k8s_oidc_fic" {
+#   application_id = azuread_application.k8s_oidc_app.id
+#   display_name   = "k8s-oidc-credential"
+#   issuer         = "https://${azurerm_public_ip.k8s_pip.ip_address}/"
+#   subject        = "system:serviceaccount:default:oidc-auth-sa"
+#   audiences = [azuread_application.k8s_oidc_app.client_id]
+# }
 
 resource "azurerm_linux_virtual_machine" "k8s_vm" {
   name                = "k8s-node-1"

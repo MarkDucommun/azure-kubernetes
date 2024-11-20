@@ -21,3 +21,13 @@
    - `SSH_PRIVATE_KEY` - The private key from the SSH key pair
    - `SSH_PUBLIC_KEY` - The public key from the SSH key pair
 9. If you want to run ansible locally, make sure to put the private SSH key at `~/.ssh/github_action_key`
+
+
+```
+az role assignment create \
+  --assignee <SERVICE_PRINCIPAL_OBJECT_ID> \
+  --role "Application Administrator" \
+  --scope /subscriptions/<YOUR_SUBSCRIPTION_ID>
+```
+
+`az ad sp list --display-name github-action-sp`
