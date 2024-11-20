@@ -328,11 +328,6 @@
         state: directory
         mode: '0755'
 
-    - name: Check if ArgoCD Application manifest exists
-      stat:
-        path: /tmp/argo/manifest.yml
-      register: argo_manifest_check
-
     - name: Create ArgoCD Application manifest
       copy:
         dest: "/tmp/argo/manifest.yml"
@@ -355,7 +350,6 @@
               automated:
                 prune: true
                 selfHeal: true
-        when: argo_manifest_check.stat.exists == false
 
     - name: Apply ArgoCD Application manifest
       command: kubectl apply -n argocd -f /tmp/argo/manifest.yml
