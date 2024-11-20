@@ -260,9 +260,9 @@
       become: yes
 
     - name: Check if Azure Secret exists
-      command: kubectl get secret azure-config-secret -n kube-system
+      command: kubectl get secret azure-config-secret -n kube-system | grep -q azure-config-secret
       register: kube_azure_secret_check
-      failed_when: false
+      failed_when: kube_azure_secret_check.rc not in [0, 1]
 
     - name: Apply Azure Secret
       command: kubectl create secret generic azure-config-secret --from-file=/tmp/kube/azure.json -n kube-system
