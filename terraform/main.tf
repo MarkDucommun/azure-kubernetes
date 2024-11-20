@@ -102,7 +102,7 @@ resource "azuread_application_federated_identity_credential" "k8s_oidc_fic" {
   display_name   = "k8s-oidc-credential"
   issuer         = "https://${azurerm_public_ip.k8s_pip.ip_address}/"
   subject        = "system:serviceaccount:default:oidc-auth-sa"
-  audiences = [azuread_application.k8s_oidc_app.application_id]
+  audiences = [azuread_application.k8s_oidc_app.client_id]
 }
 
 resource "azurerm_linux_virtual_machine" "k8s_vm" {
