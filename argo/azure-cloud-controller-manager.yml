@@ -28,6 +28,7 @@ spec:
             - --cloud-provider=azure
             - --cloud-config=/etc/kubernetes/azure.json
             - --leader-elect=true
+            - --cluster-cidr=192.168.0.0/16
           volumeMounts:
             - mountPath: /etc/kubernetes/
               name: cloud-config
