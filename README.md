@@ -20,3 +20,4 @@
    - `AZURE_SUBSCRIPTION_ID` - Your subscription ID
    - `SSH_PRIVATE_KEY` - The private key from the SSH key pair
    - `SSH_PUBLIC_KEY` - The public key from the SSH key pair
+9. If you want to run ansible locally, make sure to put the private SSH key at `~/.ssh/github_action_key`

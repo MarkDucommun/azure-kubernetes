@@ -11,6 +11,11 @@ output "subnet_name" {
 }
 
 output "vm_public_ip" {
-  value = azurerm_public_ip.k8s_pip.ip_address
+  value       = azurerm_public_ip.k8s_pip.ip_address
   description = "Public IP address of the Kubernetes node"
+}
+
+output "oidc_client_id" {
+  value       = azuread_application.k8s_oidc_app.client_id
+  description = "Client ID of the Azure AD OIDC application"
 }

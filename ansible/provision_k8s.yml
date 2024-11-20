@@ -135,13 +135,57 @@
           net.ipv4.ip_forward = 1
       become: true
 
+    - name: Ensure tmp kube directory exists
+      file:
+        path: "/tmp/kube"
+        state: directory
+        mode: '0755'
+
+    - name: Check if Azure Secret exists
+      stat:
+        path: /tmp/kube/azure.json
+      register: kube_azure_secret_check
+
+    - name: Create Azure Secret
+      copy:
+        dest: "/tmp/kube/azure.json"
+        content: |
+          {
+            "tenantId": "{{ oidc_tenant_id }}",
+            "subscriptionId": "{{ azure_subscription_id }}",
+            "resourceGroup": "{{ resource_group }}",
+            "aadClientId": "{{ oidc_client_id }}",
+            "cloud": "AzurePublicCloud",
+            "oidcIssuerUrl": "https://{{ public_ip  }}/openid/v1/",
+            "oidcTokenPath": "/var/run/secrets/tokens"
+          }
+      when: kube_azure_secret_check.stat.exists == false
+
+    - name: Check if Api Server Cluster Configuration exists
+      stat:
+        path: /tmp/kube/apiserver-config.yml
+      register: kube_apiserver_check
+
+    - name: Create Kubernetes Api Server Cluster Configuration
+      copy:
+        dest: "/tmp/kube/apiserver-config.yml"
+        content: |
+          apiVersion: kubeadm.k8s.io/v1beta3
+          kind: ClusterConfiguration
+          apiServer:
+            extraArgs:
+              oidc-issuer-url: https://{{ public_ip }}
+              oidc-client-id: "{{ oidc_client_id }}"
+              oidc-username-claim: "sub"
+      when: kube_apiserver_check.stat.exists == false
+
     - name: Check if Kubernetes cluster is already initialized
       stat:
         path: /etc/kubernetes/admin.conf
       register: kubeadm_status
 
     - name: Initialize Kubernetes cluster
-      command: kubeadm init --pod-network-cidr=192.168.0.0/16
+      command: kubeadm init --pod-network-cidr=192.168.0.0/16 --config /tmp/kube/apiserver-config.yaml
       when: kubeadm_status.stat.exists == false
       become: true
 
@@ -162,6 +206,17 @@
         mode: '0644'
         remote_src: yes
       become: yes
+
+    - name: Check if Azure Secret exists
+      command: kubectl get secret azure-config-secret -n kube-system
+      register: kube_azure_secret_check
+      failed_when: false
+
+    - name: Apply Azure Secret
+      command: kubectl create secret generic azure-config-secret --from-file=/tmp/kube/azure.json -n kube-system
+      become: true
+      become_user: "{{ ansible_user }}"
+      when: kube_azure_secret_check.rc != 0
 
     - name: Check if control-plane taint is present
       shell: |
@@ -221,6 +276,11 @@
         state: directory
         mode: '0755'
 
+    - name: Check if ArgoCD Application manifest exists
+      stat:
+        path: /tmp/argo/manifest.yml
+      register: argo_manifest_check
+
     - name: Create ArgoCD Application manifest
       copy:
         dest: "/tmp/argo/manifest.yml"
@@ -228,7 +288,7 @@
           apiVersion: argoproj.io/v1alpha1
           kind: Application
           metadata:
-            name: k8s-basics
+            name: nginx-test
             namespace: argocd
           spec:
             project: default
@@ -238,11 +298,12 @@
               path: argo
             destination:
               server: https://kubernetes.default.svc
-              namespace: test
+              namespace: default
             syncPolicy:
               automated:
                 prune: true
                 selfHeal: true
+        when: argo_manifest_check.stat.exists == false
 
     - name: Apply ArgoCD Application manifest
       command: kubectl apply -n argocd -f /tmp/argo/manifest.yml

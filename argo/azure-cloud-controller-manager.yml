@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cloud-controller-manager
+  namespace: kube-system
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloud-controller-manager
+  namespace: kube-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      k8s-app: cloud-controller-manager
+  template:
+    metadata:
+      labels:
+        k8s-app: cloud-controller-manager
+    spec:
+      serviceAccountName: cloud-controller-manager
+      containers:
+        - name: cloud-controller-manager
+          image: mcr.microsoft.com/oss/kubernetes/azure-cloud-controller-manager:v1.31.1
+          command:
+            - /cloud-controller-manager
+            - --cloud-provider=azure
+            - --cloud-config=/etc/kubernetes/azure.json
+            - --leader-elect=true
+          volumeMounts:
+            - mountPath: /etc/kubernetes/
+              name: cloud-config
+              readOnly: true
+      volumes:
+        - name: cloud-config
+          secret:
+            secretName: azure-config-secret
