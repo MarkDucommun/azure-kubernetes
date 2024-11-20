@@ -83,9 +83,9 @@ resource "azurerm_network_interface" "k8s_nic" {
   }
 }
 
-resource "azuread_application" "k8s_oidc_app" {
-  display_name = "k8s-oidc-app"
-}
+# resource "azuread_application" "k8s_oidc_app" {
+#   display_name = "k8s-oidc-app"
+# }
 
 # resource "azuread_service_principal" "k8s_oidc_sp" {
 #   client_id = azuread_application.k8s_oidc_app.client_id
