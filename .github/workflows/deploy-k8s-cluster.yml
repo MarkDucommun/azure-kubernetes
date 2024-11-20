@@ -98,7 +98,7 @@ jobs:
           PUBLIC_IP=$(jq -r '.vm_public_ip.value' terraform/terraform_output.json)
           OIDC_CLIENT_ID=$(jq -r '.oidc_client_id.value' terraform/terraform_output.json)
           RESOURCE_GROUP_NAME=$(jq -r '.resource_group_name.value' terraform/terraform_output.json)
-          ansible-playbook -i ansible/inventory.ini \
+          ansible-playbook -v -i ansible/inventory.ini \
           --private-key ~/.ssh/github_action_key \
           --extra-vars "oidc_client_id=$OIDC_CLIENT_ID \
             public_ip=$PUBLIC_IP \
