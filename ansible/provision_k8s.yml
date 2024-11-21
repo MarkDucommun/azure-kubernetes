@@ -144,7 +144,7 @@
     - name: Create Azure CCM Cloud Config Secret
       template:
         src: templates/azure-cloud-config-secret.j2
-        dest: /tmp/kube/azure-cloud-config-secret.yaml
+        dest: /tmp/kube/azure-cloud-config-secret.json
 
     - name: Create Kubernetes Api Server Cluster Configuration
       template:
