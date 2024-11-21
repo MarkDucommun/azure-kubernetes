@@ -141,29 +141,14 @@
         state: directory
         mode: '0755'
 
-    - name: Check if Azure Secret exists
-      stat:
-        path: /tmp/kube/azure.json
-      register: kube_azure_secret_check
-
-    - name: Create Azure Secret
-      copy:
-        dest: "/tmp/kube/azure.json"
-        content: |
-          {
-            "tenantId": "{{ oidc_tenant_id }}",
-            "subscriptionId": "{{ azure_subscription_id }}",
-            "resourceGroup": "{{ resource_group }}",
-            "aadClientId": "{{ oidc_client_id }}",
-            "cloud": "AzurePublicCloud",
-            "oidcIssuerUrl": "https://{{ public_ip  }}/openid/v1/",
-            "oidcTokenPath": "/var/run/secrets/tokens"
-          }
-      when: kube_azure_secret_check.stat.exists == false
+    - name: Create Azure CCM Cloud Config Secret
+      template:
+        src: templates/azure-cloud-config-secret.j2
+        dest: /tmp/kube/azure-cloud-config-secret.yaml
 
     - name: Create Kubernetes Api Server Cluster Configuration
       template:
-        src: templates/kubeadm_config.j2
+        src: templates/kubeadm-config.j2
         dest: /tmp/kube/kubeadm-config.yaml
 
     - name: Check if Kubernetes cluster is already initialized
@@ -172,7 +157,7 @@
       register: kubeadm_status
 
     - name: Initialize Kubernetes cluster
-      command: kubeadm init --config /tmp/kube/kubeadm-config.yaml
+      command: kubeadm init --pod-network-cidr=192.168.0.0/16  #--config /tmp/kube/kubeadm-config.yaml
       when: kubeadm_status.stat.exists == false
       become: true
 
@@ -202,7 +187,7 @@
       failed_when: kube_azure_secret_check.rc not in [0, 1]
 
     - name: Apply Azure Secret
-      command: kubectl create secret generic azure-config-secret --from-file=/tmp/kube/azure.json -n kube-system
+      command: kubectl create secret generic azure-config-secret --from-file=/tmp/kube/azure-cloud-config-secret.json -n kube-system
       become: true
       become_user: "{{ ansible_user }}"
       when: kube_azure_secret_check.rc == 1
