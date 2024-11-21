@@ -192,6 +192,23 @@
       become_user: "{{ ansible_user }}"
       when: kube_azure_secret_check.rc == 1
 
+    - name: Check if Calico is already deployed
+      command: kubectl get pods -n calico-system
+      register: calico_check
+      changed_when: false
+      failed_when: false
+      become_user: "{{ ansible_user }}"
+
+    - name: Install Calico for Pod Networking if not already present
+#        kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
+      command: |
+        kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.29.0/manifests/tigera-operator.yaml
+        kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.29.0/manifests/custom-resources.yaml
+
+      when: "'calico' not in calico_check.stdout"
+      become: true
+      become_user: "{{ ansible_user }}"
+
     - name: Check if control-plane taint is present
       shell: |
         kubectl get nodes -o jsonpath='{.items[0].spec.taints}' | grep -q "node-role.kubernetes.io/control-plane"
@@ -203,19 +220,6 @@
     - name: Remove control-plane taint to allow workloads
       command: kubectl taint nodes --all node-role.kubernetes.io/control-plane-
       when: taint_check.rc == 0
-      become_user: "{{ ansible_user }}"
-
-    - name: Check if Calico is already deployed
-      command: kubectl get pods -n kube-system
-      register: calico_check
-      changed_when: false
-      failed_when: false
-      become_user: "{{ ansible_user }}"
-
-    - name: Install Calico for Pod Networking if not already present
-      command: kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
-      when: "'calico' not in calico_check.stdout"
-      become: true
       become_user: "{{ ansible_user }}"
 
     - name: Check if ArgoCD namespace exists
