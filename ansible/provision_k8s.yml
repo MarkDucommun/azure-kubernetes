@@ -24,21 +24,42 @@
         path: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
       register: gpg_key_status
 
-    # Make declarative
-    - name: Add Kubernetes GPG key
+    - name: Download Kubernetes GPG key
       become: true
-      shell: curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.31/deb/Release.key | gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+      get_url:
+        url: https://pkgs.k8s.io/core:/stable:/v1.31/deb/Release.key
+        dest: /tmp/kubernetes-apt-key.gpg
+        mode: '0644'
+      when: gpg_key_status.stat.exists == false
+
+    - name: De-armor Kubernetes GPG key
+      become: true
+      command: gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg /tmp/kubernetes-apt-key.gpg
       args:
         creates: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
       when: gpg_key_status.stat.exists == false
 
-    - name: Change permissions of the GPG key
+    - name: Remove temporary GPG key file
       become: true
       file:
-        path: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
-        owner: root
-        group: root
-        mode: '0644'
+        path: /tmp/kubernetes-apt-key.gpg
+        state: absent
+
+    # Make declarative
+#    - name: Add Kubernetes GPG key
+#      become: true
+#      shell: curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.31/deb/Release.key | gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+#      args:
+#        creates: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+#      when: gpg_key_status.stat.exists == false
+#
+#    - name: Change permissions of the GPG key
+#      become: true
+#      file:
+#        path: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+#        owner: root
+#        group: root
+#        mode: '0644'
 
     - name: Add Kubernetes APT repository
       become: true
@@ -122,6 +143,8 @@
         reload: yes
       with_items:
         - net.bridge.bridge-nf-call-iptables
+#        - net.ipv6.conf.all.disable_ipv6
+#        - net.ipv6.conf.default.disable_ipv6
         - net.ipv4.ip_forward
       become: true
 
@@ -199,7 +222,7 @@
       become_user: "{{ ansible_user }}"
 
     - name: Install Calico for Pod Networking if not already present
-      command: kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
+#      command: kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
       shell: |
         kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.29.0/manifests/tigera-operator.yaml
         kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.29.0/manifests/custom-resources.yaml
