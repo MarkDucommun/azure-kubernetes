@@ -1,0 +1,31 @@
+name: build-k8s-image.yml
+on:
+  workflow_dispatch:  # Allows manual triggering of the workflow
+
+jobs:
+  deploy-k8s-prerequisites:
+    runs-on: ubuntu-latest
+    env:
+      ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init
+        run: terraform init
+        working-directory: terraform_prerequisites
+
+      - name: Terraform Plan
+        run: |
+          terraform plan -out=tfplan -input=false \
+          -var "resource_group_name=test-k8s" \
+        working-directory: terraform_prerequisites
+
+      - name: Terraform Apply
+        run: terraform apply -input=false tfplan
+        working-directory: terraform_prerequisites
