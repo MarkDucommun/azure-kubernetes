@@ -1,6 +1,11 @@
-name: build-k8s-image.yml
+name: Build Kubernetes Image
+
 on:
-  workflow_dispatch:  # Allows manual triggering of the workflow
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
 
 jobs:
   deploy-k8s-prerequisites:
