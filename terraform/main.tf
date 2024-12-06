@@ -120,13 +120,13 @@ resource "azurerm_linux_virtual_machine" "k8s_vm" {
     storage_account_type = "Standard_LRS"
   }
 
-  source_image_id = var.custom_image_id
-  # source_image_reference {
-  #   publisher = "Canonical"
-  #   offer     = "ubuntu-24_04-lts"
-  #   sku       = "server"
-  #   version   = "latest"
-  # }
+  # source_image_id = var.custom_image_id
+  source_image_reference {
+    publisher = "Canonical"
+    offer     = "ubuntu-24_04-lts"
+    sku       = "server"
+    version   = "latest"
+  }
 
   admin_ssh_key {
     username   = var.admin_username

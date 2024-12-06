@@ -36,3 +36,14 @@ jobs:
       - name: Terraform Apply
         run: terraform apply -input=false tfplan
         working-directory: terraform_prerequisites
+  build-k8s-image:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Add Private SSH Key
+        run: |
+          mkdir -p ~/.ssh  # Ensure .ssh directory exists
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/github_action_key
+          chmod 600 ~/.ssh/github_action_key
