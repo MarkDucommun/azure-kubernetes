@@ -1,21 +1,25 @@
 # Create a resource group
-resource "azurerm_resource_group" "k8s_rg" {
-  name     = var.resource_group_name
-  location = var.location
+# resource "azurerm_resource_group" "k8s_rg" {
+#   name     = var.resource_group_name
+#   location = var.location
+# }
+
+data "azurerm_resource_group" "k8s_rg" {
+  name = var.resource_group_name
 }
 
 # Create a virtual network
 resource "azurerm_virtual_network" "k8s_vnet" {
   name                = var.vnet_name
-  resource_group_name = azurerm_resource_group.k8s_rg.name
-  location            = azurerm_resource_group.k8s_rg.location
+  resource_group_name = data.azurerm_resource_group.k8s_rg.name
+  location            = data.azurerm_resource_group.k8s_rg.location
   address_space = ["10.0.0.0/16"]
 }
 
 # Create a subnet
 resource "azurerm_subnet" "k8s_subnet" {
   name                 = var.subnet_name
-  resource_group_name  = azurerm_resource_group.k8s_rg.name
+  resource_group_name  = data.azurerm_resource_group.k8s_rg.name
   virtual_network_name = azurerm_virtual_network.k8s_vnet.name
   address_prefixes = ["10.0.1.0/24"]
 
@@ -25,8 +29,8 @@ resource "azurerm_subnet" "k8s_subnet" {
 # Create a Network Security Group
 resource "azurerm_network_security_group" "k8s_nsg" {
   name                = "k8s-nsg"
-  resource_group_name = azurerm_resource_group.k8s_rg.name
-  location            = azurerm_resource_group.k8s_rg.location
+  resource_group_name = data.azurerm_resource_group.k8s_rg.name
+  location            = data.azurerm_resource_group.k8s_rg.location
 }
 
 resource "azurerm_network_security_rule" "allow_ssh" {
@@ -39,7 +43,7 @@ resource "azurerm_network_security_rule" "allow_ssh" {
   destination_port_range      = "22"
   source_address_prefix       = "*"
   destination_address_prefix  = "*"
-  resource_group_name         = azurerm_resource_group.k8s_rg.name
+  resource_group_name         = data.azurerm_resource_group.k8s_rg.name
   network_security_group_name = azurerm_network_security_group.k8s_nsg.name
 }
 
@@ -53,7 +57,7 @@ resource "azurerm_network_security_rule" "allow_k8s_api" {
   destination_port_range      = "6443"
   source_address_prefix       = "*"
   destination_address_prefix  = "*"
-  resource_group_name         = azurerm_resource_group.k8s_rg.name
+  resource_group_name         = data.azurerm_resource_group.k8s_rg.name
   network_security_group_name = azurerm_network_security_group.k8s_nsg.name
 }
 
@@ -64,16 +68,16 @@ resource "azurerm_network_interface_security_group_association" "k8s_nic_nsg_ass
 
 resource "azurerm_public_ip" "k8s_pip" {
   name                = "k8s-pip"
-  location            = azurerm_resource_group.k8s_rg.location
-  resource_group_name = azurerm_resource_group.k8s_rg.name
+  location            = data.azurerm_resource_group.k8s_rg.location
+  resource_group_name = data.azurerm_resource_group.k8s_rg.name
   allocation_method   = "Static"
 }
 
 # Create a Virtual Machine (one as an example)
 resource "azurerm_network_interface" "k8s_nic" {
   name                = "k8s-nic"
-  location            = azurerm_resource_group.k8s_rg.location
-  resource_group_name = azurerm_resource_group.k8s_rg.name
+  location            = data.azurerm_resource_group.k8s_rg.location
+  resource_group_name = data.azurerm_resource_group.k8s_rg.name
 
   ip_configuration {
     name                          = "internal"
@@ -107,8 +111,8 @@ resource "azurerm_network_interface" "k8s_nic" {
 
 resource "azurerm_linux_virtual_machine" "k8s_vm" {
   name                = "k8s-node-1"
-  resource_group_name = azurerm_resource_group.k8s_rg.name
-  location            = azurerm_resource_group.k8s_rg.location
+  resource_group_name = data.azurerm_resource_group.k8s_rg.name
+  location            = data.azurerm_resource_group.k8s_rg.location
   size                = var.vm_size
   admin_username      = var.admin_username
   network_interface_ids = [

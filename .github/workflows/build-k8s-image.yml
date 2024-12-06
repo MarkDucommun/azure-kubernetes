@@ -43,6 +43,7 @@ jobs:
         run: terraform apply -input=false tfplan
         working-directory: terraform_prerequisites
   build-k8s-image:
+    needs: deploy-k8s-prerequisites
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code

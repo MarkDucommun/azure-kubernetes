@@ -1,5 +1,5 @@
 output "resource_group_name" {
-  value = azurerm_resource_group.k8s_rg.name
+  value = data.azurerm_resource_group.k8s_rg.name
 }
 
 output "virtual_network_name" {
