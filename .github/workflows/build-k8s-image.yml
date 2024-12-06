@@ -36,7 +36,7 @@ jobs:
         run: |
           terraform plan -out=tfplan -input=false \
           -var "resource_group_name=test-k8s" \
-          -var "packer_storage_account_name=meducpackerstorageaccount" \
+          -var "packer_storage_account_name=medpackerstorageaccount" \
         working-directory: terraform_prerequisites
 
       - name: Terraform Apply
