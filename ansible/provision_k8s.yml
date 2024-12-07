@@ -45,22 +45,6 @@
         path: /tmp/kubernetes-apt-key.gpg
         state: absent
 
-    # Make declarative
-#    - name: Add Kubernetes GPG key
-#      become: true
-#      shell: curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.31/deb/Release.key | gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
-#      args:
-#        creates: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
-#      when: gpg_key_status.stat.exists == false
-#
-#    - name: Change permissions of the GPG key
-#      become: true
-#      file:
-#        path: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
-#        owner: root
-#        group: root
-#        mode: '0644'
-
     - name: Add Kubernetes APT repository
       become: true
       copy:

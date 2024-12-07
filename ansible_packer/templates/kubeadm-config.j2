@@ -1,0 +1,13 @@
+apiVersion: kubeadm.k8s.io/v1beta4
+kind: ClusterConfiguration
+imageRepository: registry.k8s.io
+networking:
+  podSubnet: 192.168.0.0/16
+apiServer:
+  extraArgs:
+    - name: oidc-client-id
+      value: "{{ oidc_client_id }}"
+    - name: oidc-issuer-url
+      value: "https://{{ public_ip }}"
+    - name: oidc-username-claim
+      value: sub

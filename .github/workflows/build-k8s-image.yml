@@ -8,49 +8,69 @@ permissions:
   contents: read
 
 jobs:
-  deploy-k8s-prerequisites:
-    runs-on: ubuntu-latest
-    env:
-      ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-      ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Azure Login via OIDC
-        uses: azure/login@v2
-        with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-
-      - name: Terraform Init
-        run: terraform init
-        working-directory: terraform_prerequisites
-
-      - name: Terraform Plan
-        run: |
-          terraform plan -out=tfplan -input=false \
-          -var "resource_group_name=test-k8s" \
-          -var "packer_storage_account_name=medpackerstorageaccount" \
-        working-directory: terraform_prerequisites
-
-      - name: Terraform Apply
-        run: terraform apply -input=false tfplan
-        working-directory: terraform_prerequisites
+#  deploy-k8s-prerequisites:
+#    runs-on: ubuntu-latest
+#    env:
+#      ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+#      ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+#      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+#    steps:
+#      - name: Checkout code
+#        uses: actions/checkout@v3
+#
+#      - name: Azure Login via OIDC
+#        uses: azure/login@v2
+#        with:
+#          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+#          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+#          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+#
+#      - name: Setup Terraform
+#        uses: hashicorp/setup-terraform@v3
+#
+#      - name: Terraform Init
+#        run: terraform init
+#        working-directory: terraform_prerequisites
+#
+#      - name: Terraform Plan
+#        run: |
+#          terraform plan -out=tfplan -input=false \
+#          -var "resource_group_name=test-k8s" \
+#          -var "packer_storage_account_name=medpackerstorageaccount" \
+#        working-directory: terraform_prerequisites
+#
+#      - name: Terraform Apply
+#        run: terraform apply -input=false tfplan
+#        working-directory: terraform_prerequisites
   build-k8s-image:
-    needs: deploy-k8s-prerequisites
+#    needs: deploy-k8s-prerequisites
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+
+      - name: Set OIDC Token
+        run: |
+          echo "ARM_OIDC_TOKEN=$(curl -H "Accept: application/json; api-version=2.0" -H "Authorization: Bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" -H "Content-Type: application/json" -G --data-urlencode "audience=api://AzureADTokenExchange" "${ACTIONS_ID_TOKEN_REQUEST_URL}" | jq -r '.value')"  >>${GITHUB_ENV}
 
       - name: Add Private SSH Key
         run: |
           mkdir -p ~/.ssh  # Ensure .ssh directory exists
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/github_action_key
           chmod 600 ~/.ssh/github_action_key
+
+      - name: Setup `packer`
+        uses: hashicorp/setup-packer@main
+        with:
+          version: 'latest'
+
+      - name: Packer Init
+        run: packer init ./kubernetes-image.pkr.hcl
+        working-directory: packer
+
+      - name: Try to run an AzureARM build with our OIDC token
+        run: packer build -force ./kubernetes-image.pkr.hcl
+        working-directory: packer
+        env:
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID}}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID}}

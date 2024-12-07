@@ -1,45 +1,61 @@
-source "variables" {
-  file = "variables.pkr.hcl"
+variable "arm_client_id" {
+  type    = string
+  default = "${env("ARM_CLIENT_ID")}"
+}
+
+variable "arm_oidc_token" {
+  type    = string
+  default = "${env("ARM_OIDC_TOKEN")}"
+}
+
+variable "subscription_id" {
+  type    = string
+  default = "${env("ARM_SUBSCRIPTION_ID")}"
 }
 
 
-source "azure-arm" "kubernetes-image" {
-  # Azure subscription and resource group
-  subscription_id = var.azure_subscription_id
-  tenant_id       = "{{ env `AZURE_TENANT_ID` }}"
-  resource_group_name  = "packer-rg"
-  storage_account      = "packerstorageaccount"
-  managed_image_name   = "kubernetes-image"
-  managed_image_resource_group_name = "packer-rg"
-  location             = "East US"
+packer {
+  required_plugins {
+    ansible = {
+      version = ">= 1.1.2"
+      source  = "github.com/hashicorp/ansible"
+    }
+    azure = {
+      source  = "github.com/hashicorp/azure"
+      version = ">= 2.2.0"
+    }
+  }
+}
 
-  # Base OS
-  os_type       = "Linux"
+source "azure-arm" "kubernetes-image" {
+  client_id                         = "${var.arm_client_id}"
+  client_jwt                        = "${var.arm_oidc_token}"
+  subscription_id                   = "${var.subscription_id}"
+  managed_image_name                = "kubernetes-image"
+  managed_image_resource_group_name = "test-k8s"
+  location                          = "Central US"
+
+  os_type         = "Linux"
   image_publisher = "Canonical"
   image_offer     = "ubuntu-24_04-lts"
   image_sku       = "server"
   image_version   = "latest"
   vm_size         = "Standard_B1s"
-
-  # OIDC Authentication
-  use_oidc = true
-  client_id = "{{ env `AZURE_CLIENT_ID` }}"  # OIDC-enabled Azure Application's Client ID
 }
 
-# Define the build step
 build {
-  name    = "kubernetes-image-build"
+  name = "kubernetes-image-build"
   sources = ["source.azure-arm.kubernetes-image"]
 
-  # Use Ansible for provisioning
   provisioner "ansible" {
-    playbook_file   = "../ansible/provision_k8s.yml"
-    user            = "azureuser"
-    extra_arguments = ["-i", "localhost,", "--private-key=/path/to/your/private/key"]
-
-    # Additional variables can be passed if needed
-    extra_vars = {
-      azure_subscription_id = "{{ env `AZURE_SUBSCRIPTION_ID` }}"
-    }
+    playbook_file = "../ansible_packer/provision_k8s.yml"
+    user          = "azureuser"
+    extra_arguments = [
+      # "-i",
+      # "localhost,",
+      "--private-key=~/.ssh/github_action_key",
+      "--extra-vars",
+      "@/../ansible_packer/vars.yml"
+    ]
   }
 }

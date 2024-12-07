@@ -1,0 +1,5 @@
+oidc_client_id: 8cfdfe1d-51ce-4f20-8348-bca875b9c503
+public_ip: 52.189.106.48
+resource_group: test-k8s
+oidc_tenant_id: 5e954a55-dfa4-4515-a70b-2c841a09b0be
+azure_subscription_id: 8ed56184-2c26-4958-8cee-3c8437a115c8
