@@ -2,6 +2,14 @@
   hosts: all
   become: true
   tasks:
+    - name: Ensure azureuser account exists
+      become: yes
+      user:
+        name: {{ ansible_user }}
+        home: /home/{{ ansible_user }}
+        shell: /bin/bash
+        state: present
+
     - name: Install required packages
       apt:
         name:
@@ -159,8 +167,8 @@
         group: "{{ ansible_user }}"
         mode: '0755'
       with_items:
-        - /home/"{{ ansible_user }}"
-        - /home/"{{ ansible_user }}"/.kube
+        - /home/{{ ansible_user }}
+        - /home/{{ ansible_user }}/.kube
 
     - name: Ensure argo directory exists
       file:
