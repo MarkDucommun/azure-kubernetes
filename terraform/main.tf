@@ -104,9 +104,8 @@ resource "azurerm_network_interface" "k8s_nic" {
 # }
 
 data "azurerm_image" "kubernetes_base" {
-  location            = data.azurerm_resource_group.k8s_rg.location
-  name                = var.image_name
   resource_group_name = data.azurerm_resource_group.k8s_rg.name
+  name                = var.image_name
 }
 
 resource "azurerm_linux_virtual_machine" "k8s_vm" {
