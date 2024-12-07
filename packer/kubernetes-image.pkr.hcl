@@ -43,7 +43,7 @@ packer {
 
 source "azure-arm" "kubernetes-image" {
   client_id                         = "${var.arm_client_id}"
-  client_jwt                        = "${var.arm_oidc_token}"
+  client_jwt                        = "${vararm_oidc_token}"
   subscription_id                   = "${var.subscription_id}"
   managed_image_name                = "${var.managed_image_name}"
   managed_image_resource_group_name = "${var.resource_group_name}"
@@ -55,19 +55,6 @@ source "azure-arm" "kubernetes-image" {
   image_sku       = "server"
   image_version   = "latest"
   vm_size         = "Standard_B1s"
-
-  cd_label = "cidata"
-  cd_content = {
-    "meta-data" = ""
-    "user-data" = <<-EOF
-      #cloud-config
-      users:
-      - name: azureuser
-        sudo: ALL=(ALL) NOPASSWD:ALL
-        shell: /bin/bash
-      hostname: template
-    EOF
-  }
 }
 
 build {
@@ -76,6 +63,6 @@ build {
 
   provisioner "ansible" {
     playbook_file = "../ansible_packer/provision_k8s.yml"
-    user          = "azureuser"
+    # user          = "azureuser"
   }
 }
