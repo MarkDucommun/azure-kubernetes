@@ -142,13 +142,25 @@
 #        src: templates/kubeadm-config.j2
 #        dest: /tmp/kube/kubeadm-config.yaml
 
-    - name: Create .kube directory if it doesn't exist
-      file:
-        path: "/home/{{ ansible_user }}/.kube"
-        state: directory
-        mode: '0755'
+#    - name: Create .kube directory if it doesn't exist
+#      file:
+#        path: "/home/{{ ansible_user }}/.kube"
+#        state: directory
+#        mode: '0755'
+#      become: yes
+#      become_user: "{{ ansible_user }}"
+
+    - name: Ensure .kube directory exists
       become: yes
-      become_user: "{{ ansible_user }}"
+      file:
+        path: "{{ item }}"
+        state: directory
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: '0755'
+      with_items:
+        - /home/"{{ ansible_user }}"
+        - /home/"{{ ansible_user }}"/.kube
 
     - name: Ensure argo directory exists
       file:
