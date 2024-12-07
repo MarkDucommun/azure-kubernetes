@@ -53,11 +53,11 @@ jobs:
         run: |
           echo "ARM_OIDC_TOKEN=$(curl -H "Accept: application/json; api-version=2.0" -H "Authorization: Bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" -H "Content-Type: application/json" -G --data-urlencode "audience=api://AzureADTokenExchange" "${ACTIONS_ID_TOKEN_REQUEST_URL}" | jq -r '.value')"  >>${GITHUB_ENV}
 
-      - name: Add Private SSH Key
-        run: |
-          mkdir -p ~/.ssh  # Ensure .ssh directory exists
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/github_action_key
-          chmod 600 ~/.ssh/github_action_key
+#      - name: Add Private SSH Key
+#        run: |
+#          mkdir -p ~/.ssh  # Ensure .ssh directory exists
+#          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/github_action_key
+#          chmod 600 ~/.ssh/github_action_key
 
       - name: Setup `packer`
         uses: hashicorp/setup-packer@main
@@ -74,3 +74,5 @@ jobs:
         env:
           ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID}}
           ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID}}
+          RESOURCE_GROUP_NAME: test-k8s
+          MANAGED_IMAGE_NAME: kubernetes-base

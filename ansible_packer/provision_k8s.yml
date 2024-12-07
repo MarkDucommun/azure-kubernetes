@@ -132,15 +132,15 @@
         state: directory
         mode: '0755'
 
-    - name: Create Azure CCM Cloud Config Secret
-      template:
-        src: templates/azure-cloud-config-secret.j2
-        dest: /tmp/kube/azure-cloud-config-secret.json
-
-    - name: Create Kubernetes Api Server Cluster Configuration
-      template:
-        src: templates/kubeadm-config.j2
-        dest: /tmp/kube/kubeadm-config.yaml
+#    - name: Create Azure CCM Cloud Config Secret
+#      template:
+#        src: templates/azure-cloud-config-secret.j2
+#        dest: /tmp/kube/azure-cloud-config-secret.json
+#
+#    - name: Create Kubernetes Api Server Cluster Configuration
+#      template:
+#        src: templates/kubeadm-config.j2
+#        dest: /tmp/kube/kubeadm-config.yaml
 
     - name: Create .kube directory if it doesn't exist
       file:

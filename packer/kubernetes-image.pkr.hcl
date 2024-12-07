@@ -13,6 +13,20 @@ variable "subscription_id" {
   default = "${env("ARM_SUBSCRIPTION_ID")}"
 }
 
+variable "resource_group_name" {
+  type = string
+  default = "${env("RESOURCE_GROUP_NAME")}"
+}
+
+variable "managed_image_name" {
+  type = string
+  default = "${env("MANAGED_IMAGE_NAME")}"
+}
+
+  variable "location" {
+  type = string
+  default = "Central US"
+}
 
 packer {
   required_plugins {
@@ -31,9 +45,9 @@ source "azure-arm" "kubernetes-image" {
   client_id                         = "${var.arm_client_id}"
   client_jwt                        = "${var.arm_oidc_token}"
   subscription_id                   = "${var.subscription_id}"
-  managed_image_name                = "kubernetes-image"
-  managed_image_resource_group_name = "test-k8s"
-  location                          = "Central US"
+  managed_image_name                = "${var.managed_image_name}"
+  managed_image_resource_group_name = "${var.resource_group_name}"
+  location                          = "${var.location}"
 
   os_type         = "Linux"
   image_publisher = "Canonical"
@@ -50,12 +64,5 @@ build {
   provisioner "ansible" {
     playbook_file = "../ansible_packer/provision_k8s.yml"
     user          = "azureuser"
-    extra_arguments = [
-      # "-i",
-      # "localhost,",
-      "--private-key=~/.ssh/github_action_key",
-      "--extra-vars",
-      "@/../ansible_packer/vars.yml"
-    ]
   }
 }
