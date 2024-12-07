@@ -43,7 +43,7 @@ packer {
 
 source "azure-arm" "kubernetes-image" {
   client_id                         = "${var.arm_client_id}"
-  client_jwt                        = "${vararm_oidc_token}"
+  client_jwt                        = "${var.arm_oidc_token}"
   subscription_id                   = "${var.subscription_id}"
   managed_image_name                = "${var.managed_image_name}"
   managed_image_resource_group_name = "${var.resource_group_name}"
