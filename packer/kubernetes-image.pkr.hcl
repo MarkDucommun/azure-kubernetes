@@ -14,17 +14,17 @@ variable "subscription_id" {
 }
 
 variable "resource_group_name" {
-  type = string
+  type    = string
   default = "${env("RESOURCE_GROUP_NAME")}"
 }
 
 variable "managed_image_name" {
-  type = string
+  type    = string
   default = "${env("MANAGED_IMAGE_NAME")}"
 }
 
-  variable "location" {
-  type = string
+variable "location" {
+  type    = string
   default = "Central US"
 }
 
