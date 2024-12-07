@@ -27,7 +27,7 @@ variable "vm_size" {
   default     = "Standard_B2s"
 }
 
-variable "custom_image_id" {
+variable "image_name" {
   description = "Azure custom image ID to use for the VM"
   type        = string
 }

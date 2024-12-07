@@ -63,6 +63,5 @@ build {
 
   provisioner "ansible" {
     playbook_file = "../ansible_packer/provision_k8s.yml"
-    # user          = "azureuser"
   }
 }

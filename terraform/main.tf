@@ -1,9 +1,3 @@
-# Create a resource group
-# resource "azurerm_resource_group" "k8s_rg" {
-#   name     = var.resource_group_name
-#   location = var.location
-# }
-
 data "azurerm_resource_group" "k8s_rg" {
   name = var.resource_group_name
 }
@@ -109,6 +103,12 @@ resource "azurerm_network_interface" "k8s_nic" {
 #   audiences = [azuread_application.k8s_oidc_app.client_id]
 # }
 
+data "azurerm_image" "kubernetes_base" {
+  location            = data.azurerm_resource_group.k8s_rg.location
+  name                = var.image_name
+  resource_group_name = data.azurerm_resource_group.k8s_rg.name
+}
+
 resource "azurerm_linux_virtual_machine" "k8s_vm" {
   name                = "k8s-node-1"
   resource_group_name = data.azurerm_resource_group.k8s_rg.name
@@ -124,7 +124,7 @@ resource "azurerm_linux_virtual_machine" "k8s_vm" {
     storage_account_type = "Standard_LRS"
   }
 
-  source_image_id = var.custom_image_id
+  source_image_id = data.azurerm_image.kubernetes_base.id
   # source_image_reference {
   #   publisher = "Canonical"
   #   offer     = "ubuntu-24_04-lts"
