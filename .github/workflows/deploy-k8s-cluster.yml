@@ -43,6 +43,7 @@ jobs:
           terraform plan -out=tfplan -input=false \
           -var "admin_ssh_public_key=${{ secrets.SSH_PUBLIC_KEY }}" \
           -var "resource_group_name=test-k8s" \
+          -var "image_name=kubernetes-base" \
           -var "azure_subscription_id=${{ secrets.AZURE_SUBSCRIPTION_ID }}" \
           -var "oidc_client_id=${{ secrets.OIDC_CLIENT_ID }}" \
         working-directory: terraform
