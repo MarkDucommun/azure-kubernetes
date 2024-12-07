@@ -2,14 +2,6 @@
   hosts: all
   become: true
   tasks:
-    - name: Ensure azureuser account exists
-      become: yes
-      user:
-        name: "{{ ansible_user }}"
-        home: /home/{{ ansible_user }}
-        shell: /bin/bash
-        state: present
-
     - name: Install required packages
       apt:
         name:

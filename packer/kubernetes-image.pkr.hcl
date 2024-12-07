@@ -55,6 +55,19 @@ source "azure-arm" "kubernetes-image" {
   image_sku       = "server"
   image_version   = "latest"
   vm_size         = "Standard_B1s"
+
+  cd_label = "cidata"
+  cd_content = {
+    "meta-data" = ""
+    "user-data" = <<-EOF
+      #cloud-config
+      users:
+      - name: azureuser
+        sudo: ALL=(ALL) NOPASSWD:ALL
+        shell: /bin/bash
+      hostname: template
+    EOF
+  }
 }
 
 build {
