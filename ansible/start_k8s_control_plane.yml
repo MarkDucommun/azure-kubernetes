@@ -2,16 +2,17 @@
   hosts: all
   become: true
   tasks:
-
     - name: Create Azure CCM Cloud Config Secret
+      become: true
       template:
         src: templates/azure-cloud-config-secret.j2
-        dest: /tmp/kube/azure-cloud-config-secret.json
+        dest: /etc/kubernetes/azure-cloud-config-secret.json
 
     - name: Create Kubernetes Api Server Cluster Configuration
+      become: true
       template:
         src: templates/kubeadm-config.j2
-        dest: /tmp/kube/kubeadm-config.yaml
+        dest: /etc/kubernetes/kubeadm-config.yaml
 
     - name: Disable swap
       shell: |
@@ -69,18 +70,18 @@
         remote_src: yes
       become: yes
 
-#    - name: Check if Azure Secret exists
-#      shell: kubectl get secret azure-config-secret -n kube-system | grep -q azure-config-secret
-#      register: kube_azure_secret_check
-#      become: true
-#      become_user: "{{ ansible_user }}"
-#      failed_when: kube_azure_secret_check.rc not in [0, 1]
-#
-#    - name: Apply Azure Secret
-#      command: kubectl create secret generic azure-config-secret --from-file=/tmp/kube/azure-cloud-config-secret.json -n kube-system
-#      become: true
-#      become_user: "{{ ansible_user }}"
-#      when: kube_azure_secret_check.rc == 1
+    - name: Check if Azure Secret exists
+      shell: kubectl get secret azure-config-secret -n kube-system | grep -q azure-config-secret
+      register: kube_azure_secret_check
+      become: true
+      become_user: "{{ ansible_user }}"
+      failed_when: kube_azure_secret_check.rc not in [0, 1]
+
+    - name: Apply Azure Secret
+      command: kubectl create secret generic azure-config-secret --from-file=/etc/kubernetes/azure-cloud-config-secret.json -n kube-system
+      become: true
+      become_user: "{{ ansible_user }}"
+      when: kube_azure_secret_check.rc == 1
 
     - name: Check if Calico is already deployed
       command: kubectl get pods -n calico-system
@@ -137,36 +138,7 @@
       become: true
       become_user: "{{ ansible_user }}"
 
-    - name: Ensure argo directory exists
-      file:
-        path: "/tmp/argo"
-        state: directory
-        mode: '0755'
-
-    - name: Create ArgoCD Application manifest
-      copy:
-        dest: "/tmp/argo/manifest.yml"
-        content: |
-          apiVersion: argoproj.io/v1alpha1
-          kind: Application
-          metadata:
-            name: nginx-test
-            namespace: argocd
-          spec:
-            project: default
-            source:
-              repoURL: https://github.com/MarkDucommun/azure-kubernetes
-              targetRevision: HEAD
-              path: argo
-            destination:
-              server: https://kubernetes.default.svc
-              namespace: default
-            syncPolicy:
-              automated:
-                prune: true
-                selfHeal: true
-
     - name: Apply ArgoCD Application manifest
-      command: kubectl apply -n argocd -f /tmp/argo/manifest.yml
+      command: kubectl apply -n argocd -f /etc/kubernetes/addons/argo/manifest.yml
       become: true
       become_user: "{{ ansible_user }}"

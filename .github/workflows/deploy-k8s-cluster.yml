@@ -106,7 +106,7 @@ jobs:
             oidc_tenant_id=${{ secrets.AZURE_TENANT_ID }} \
             azure_subscription_id=${{ secrets.AZURE_SUBSCRIPTION_ID }} \
             resource_group=$RESOURCE_GROUP_NAME" \
-          ansible/provision_k8s.yml
+          ansible/start_k8s_control_plane.yml
         env:
           ANSIBLE_SSH_ARGS: "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ~/.ssh/github_action_key"
           ANSIBLE_PRIVATE_KEY_FILE: ~/.ssh/github_action_key

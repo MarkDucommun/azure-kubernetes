@@ -134,33 +134,42 @@
           net.ipv4.ip_forward = 1
       become: true
 
-    - name: Ensure tmp kube directory exists
+    - name: Ensure kubernetes config directory exists
       file:
-        path: "/tmp/kube"
+        path: "/etc/kubernetes"
         state: directory
         mode: '0755'
+      become: true
 
     - name: Ensure .kube directory exists
       become: yes
       file:
-        path: "{{ item }}"
+        path: /home/azureuser/.kube
         state: directory
         owner: azureuser
-        group: azureuser
         mode: '0755'
-      with_items:
-        - /home/azureuser
-        - /home/azureuser/.kube
+
+#    - name: Ensure .kube directory exists
+#      become: yes
+#      file:
+#        path: "{{ item }}"
+#        state: directory
+#        owner: azureuser
+#        group: azureuser
+#        mode: '0755'
+#      with_items:
+#        - /home/azureuser
+#        - /home/azureuser/.kube
 
     - name: Ensure argo directory exists
       file:
-        path: "/tmp/argo"
+        path: "/etc/kubernetes/addons/argo"
         state: directory
         mode: '0755'
 
     - name: Create ArgoCD Application manifest
       copy:
-        dest: "/tmp/argo/manifest.yml"
+        dest: "/etc/kubernetes/addons/argo/manifest.yml"
         content: |
           apiVersion: argoproj.io/v1alpha1
           kind: Application
