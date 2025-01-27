@@ -15,6 +15,10 @@ output "vm_public_ip" {
   description = "Public IP address of the Kubernetes node"
 }
 
+output "vm_fqdn" {
+  value = azurerm_public_ip.k8s_pip.fqdn
+}
+
 output "oidc_client_id" {
   value       = var.oidc_client_id
   description = "Client ID of the Azure AD OIDC application"
